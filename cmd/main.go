@@ -5,18 +5,28 @@ import (
 	"log"
 	"os"
 	"strconv"
+
 	"vc-sim-go/models"
 	"vc-sim-go/state"
 
 	"github.com/joho/godotenv"
 )
 
-func initWorkers(workerCount int) ([]*models.Worker, error) {
+func getInitializedWorkers(workerCount int) []*models.Worker {
 	workers := make([]*models.Worker, workerCount)
 	for i := range workers {
 		workers[i] = models.NewWorker(i, state.UnavailableWorkerState, nil)
 	}
-	return workers, nil
+	return workers
+}
+
+func getInitializedJobs(jobCount int, parallelismNum int) []*models.Job {
+	jobs := make([]*models.Job, jobCount)
+	for i := range jobs {
+		groupID := i / parallelismNum
+		jobs[i] = models.NewJob(i, groupID, state.UnallocatedJobState, nil, false)
+	}
+	return jobs
 }
 
 func main() {
@@ -48,12 +58,18 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading loopCount")
 	}
+	parallelismNum, err := strconv.Atoi(os.Getenv("PARALLELISM_NUM"))
+	if err != nil {
+		log.Fatal("Error loading parallelismNum")
+	}
+
 	log.Println(fmt.Sprintf(`
 ワーカ数: %d,
 ジョブ数: %d,
 参加率: %.3f,
 離脱率: %.3f,
 初期のワーカの参加率: %.3f,
+ループ数: %d,
 並列数: %d`,
 		workerLimit,
 		jobLimit,
@@ -61,10 +77,10 @@ func main() {
 		dropoutRate,
 		initialJoiningRate,
 		loopCount,
+		parallelismNum,
 	))
-	workers, err := initWorkers(workerLimit)
-	if err != nil {
-		log.Fatal("init failed")
-	}
+	workers := getInitializedWorkers(workerLimit)
 	log.Println(workers)
+	jobs := getInitializedJobs(jobLimit, parallelismNum)
+	log.Println(jobs)
 }
