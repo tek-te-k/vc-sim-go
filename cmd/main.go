@@ -5,9 +5,19 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"vc-sim-go/models"
+	"vc-sim-go/state"
 
 	"github.com/joho/godotenv"
 )
+
+func initWorkers(workerCount int) ([]*models.Worker, error) {
+	workers := make([]*models.Worker, workerCount)
+	for i := range workers {
+		workers[i] = models.NewWorker(i, state.UnavailableWorkerState, nil)
+	}
+	return workers, nil
+}
 
 func main() {
 	err := godotenv.Load(".env")
@@ -52,5 +62,9 @@ func main() {
 		initialJoiningRate,
 		loopCount,
 	))
-	// initWorkers()
+	workers, err := initWorkers(workerLimit)
+	if err != nil {
+		log.Fatal("init failed")
+	}
+	log.Println(workers)
 }
