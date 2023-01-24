@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"strconv"
 
 	"vc-sim-go/models"
 	"vc-sim-go/state"
+	"vc-sim-go/simulation"
 
 	"github.com/joho/godotenv"
 )
@@ -42,11 +44,11 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading jobLimit")
 	}
-	joiningRate, err := strconv.ParseFloat(os.Getenv("JOINING_RATE"), 32)
+	joiningRate, err := strconv.ParseFloat(os.Getenv("JOINING_RATE"), 64)
 	if err != nil {
 		log.Fatal("Error loading joiningRate")
 	}
-	dropoutRate, err := strconv.ParseFloat(os.Getenv("DROPOUT_RATE"), 32)
+	dropoutRate, err := strconv.ParseFloat(os.Getenv("DROPOUT_RATE"), 64)
 	if err != nil {
 		log.Fatal("Error loading dropoutRate")
 	}
@@ -83,4 +85,12 @@ func main() {
 	log.Println(workers)
 	jobs := getInitializedJobs(jobLimit, parallelismNum)
 	log.Println(jobs)
+	log.Println(reflect.TypeOf(joiningRate))
+	simulator := simulation.NewSimulator(workers, jobs, parallelismNum)
+
+	for i := 0; i < loopCount; i++ {
+		simulator.SetWorkersState(joiningRate)
+		simulator.SetWorkersParticipationRate(dropoutRate, joiningRate)
+		simulator.Simulate()
+	}
 }
