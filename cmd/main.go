@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"reflect"
 	"strconv"
 
 	"vc-sim-go/models"
@@ -23,7 +22,7 @@ func getInitializedWorkers(workerCount int) []*models.Worker {
 }
 
 func getInitializedJobs(jobCount int, parallelismNum int) []*models.Job {
-	jobs := make([]*models.Job, jobCount)
+	jobs := make([]*models.Job, jobCount*parallelismNum)
 	for i := range jobs {
 		groupID := i / parallelismNum
 		jobs[i] = models.NewJob(i, groupID, state.UnallocatedJobState, nil, false)
@@ -82,15 +81,15 @@ func main() {
 		parallelismNum,
 	))
 	workers := getInitializedWorkers(workerLimit)
-	log.Println(workers)
 	jobs := getInitializedJobs(jobLimit, parallelismNum)
-	log.Println(jobs)
-	log.Println(reflect.TypeOf(joiningRate))
 	simulator := simulation.NewSimulator(workers, jobs, parallelismNum)
 
 	for i := 0; i < loopCount; i++ {
 		simulator.SetWorkersState(joiningRate)
 		simulator.SetWorkersParticipationRate(dropoutRate, joiningRate)
-		simulator.Simulate()
+		cycle := simulator.Simulate()
+		fmt.Println(i, "'s cycle : ", cycle)
+		simulator.Result.TotalCycle += cycle
 	}
+	fmt.Println("total cycle : ", simulator.Result.TotalCycle)
 }
