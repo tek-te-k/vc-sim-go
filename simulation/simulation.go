@@ -32,7 +32,7 @@ func NewSimulator(workers []*models.Worker, jobs []*models.Job, parallelismNum i
 
 func (s *Simulator) SetWorkersState(joiningRate float64) {
 	for i := range s.Workers {
-		if float64(i) <= float64(len(s.Workers))*joiningRate {
+		if float64(i) < float64(len(s.Workers))*joiningRate {
 			s.Workers[i].State = state.AvailableWorkerState
 			continue
 		}
