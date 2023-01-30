@@ -59,7 +59,6 @@ func (s *Simulator) areAllJobsFinished() bool {
 func (s *Simulator) Simulate() int {
 	cycle := 0
 	for !s.areAllJobsFinished() {
-		// s.moke()
 		for i := 0; i < s.ParallelismNum; i++ {
 			s.assignJobs()
 			s.participationEvent()
@@ -97,7 +96,7 @@ func (s *Simulator) participationEvent() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			if n.Int64() <= int64(s.Workers[i].DropoutRate*100) {
+			if n.Int64() < int64(s.Workers[i].DropoutRate*100) {
 				err := s.Workers[i].Dropout()
 				if err != nil {
 					log.Fatal(err)
@@ -108,7 +107,7 @@ func (s *Simulator) participationEvent() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			if n.Int64() <= int64(s.Workers[i].JoiningRate*100) {
+			if n.Int64() < int64(s.Workers[i].JoiningRate*100) {
 				s.Workers[i].Join()
 			}
 		}
