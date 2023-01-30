@@ -2,14 +2,14 @@ package simulation
 
 import (
 	"crypto/rand"
-	"math/big"
 	"log"
+	"math/big"
 	"vc-sim-go/models"
 	"vc-sim-go/state"
 )
 
 type Result struct {
-	TotalCycle     int
+	TotalCycle int
 }
 
 type Simulator struct {
@@ -54,15 +54,6 @@ func (s *Simulator) areAllJobsFinished() bool {
 		}
 	}
 	return true
-}
-
-func (s *Simulator) moke() {
-	fin := 0
-	for i := range s.Jobs {
-		if s.Jobs[i].State == state.FinishedJobState {
-			fin += 1
-		}
-	}
 }
 
 func (s *Simulator) Simulate() int {
