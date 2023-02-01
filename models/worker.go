@@ -8,16 +8,14 @@ import (
 type Worker struct {
 	ID          int
 	State       state.WorkerState
-	AssignedJob *Job
 	DropoutRate float64
 	JoiningRate float64
 }
 
-func NewWorker(id int, state state.WorkerState, assignedJob *Job) *Worker {
+func NewWorker(id int, state state.WorkerState) *Worker {
 	return &Worker{
 		ID:          id,
 		State:       state,
-		AssignedJob: assignedJob,
 	}
 }
 

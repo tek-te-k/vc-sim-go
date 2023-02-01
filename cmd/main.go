@@ -22,10 +22,13 @@ func getInitializedWorkers(workerCount int) []*models.Worker {
 }
 
 func getInitializedJobs(jobCount int, parallelismNum int) []*models.Job {
-	jobs := make([]*models.Job, jobCount*parallelismNum)
+	jobs := make([]*models.Job, jobCount)
 	for i := range jobs {
-		groupID := i / parallelismNum
-		jobs[i] = models.NewJob(i, groupID, state.UnallocatedJobState, nil, false)
+		subjobs := make([]*models.Subjob, parallelismNum)
+		for j := range subjobs {
+			subjobs[j] = models.NewSubjob(j, state.UnallocatedSubjobState, nil)
+		}
+		jobs[i] = models.NewJob(i, state.UnallocatedJobState, subjobs)
 	}
 	return jobs
 }
@@ -63,6 +66,10 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading parallelismNum")
 	}
+	redundancy, err := strconv.Atoi(os.Getenv("REFDUNDANCY"))
+	if err != nil {
+		log.Fatal("Error loading redundancy")
+	}
 
 	log.Println(fmt.Sprintf(`
 ワーカ数: %d,
@@ -71,7 +78,8 @@ func main() {
 離脱率: %.3f,
 初期のワーカの参加率: %.3f,
 ループ数: %d,
-並列数: %d`,
+並列数: %d,
+冗長度: %d`,
 		workerLimit,
 		jobLimit,
 		joiningRate,
@@ -79,14 +87,26 @@ func main() {
 		initialJoiningRate,
 		loopCount,
 		parallelismNum,
+		redundancy,
 	))
+	config := simulation.NewConfig(
+		workerLimit,
+		jobLimit,
+		joiningRate,
+		dropoutRate,
+		initialJoiningRate,
+		loopCount,
+		parallelismNum,
+		redundancy,
+	)
+
 	workers := getInitializedWorkers(workerLimit)
 	jobs := getInitializedJobs(jobLimit, parallelismNum)
-	simulator := simulation.NewSimulator(workers, jobs, parallelismNum)
+	simulator := simulation.NewSimulator(workers, jobs, *config)
 
 	for i := 0; i < loopCount; i++ {
-		simulator.SetWorkersState(joiningRate)
-		simulator.SetWorkersParticipationRate(dropoutRate, joiningRate)
+		simulator.SetWorkersState()
+		simulator.SetWorkersParticipationRate()
 		cycle := simulator.Simulate()
 		fmt.Println(i, "'s cycle : ", cycle)
 		simulator.Result.TotalCycle += cycle

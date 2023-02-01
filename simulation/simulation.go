@@ -13,26 +13,26 @@ type Result struct {
 }
 
 type Simulator struct {
-	Workers        []*models.Worker
-	Jobs           []*models.Job
-	ParallelismNum int
-	Result         Result
+	Workers []*models.Worker
+	Jobs    []*models.Job
+	Config  Config
+	Result  Result
 }
 
-func NewSimulator(workers []*models.Worker, jobs []*models.Job, parallelismNum int) *Simulator {
+func NewSimulator(workers []*models.Worker, jobs []*models.Job, config Config) *Simulator {
 	return &Simulator{
 		Workers:        workers,
 		Jobs:           jobs,
-		ParallelismNum: parallelismNum,
+		Config:         config,
 		Result: Result{
 			TotalCycle: 0,
 		},
 	}
 }
 
-func (s *Simulator) SetWorkersState(joiningRate float64) {
+func (s *Simulator) SetWorkersState() {
 	for i := range s.Workers {
-		if float64(i) < float64(len(s.Workers))*joiningRate {
+		if float64(i) < float64(len(s.Workers))*s.Config.InitialJoiningRate {
 			s.Workers[i].State = state.AvailableWorkerState
 			continue
 		}
@@ -40,10 +40,10 @@ func (s *Simulator) SetWorkersState(joiningRate float64) {
 	}
 }
 
-func (s *Simulator) SetWorkersParticipationRate(dropoutRate float64, joiningRate float64) {
+func (s *Simulator) SetWorkersParticipationRate() {
 	for i := range s.Workers {
-		s.Workers[i].DropoutRate = dropoutRate
-		s.Workers[i].JoiningRate = joiningRate
+		s.Workers[i].DropoutRate = s.Config.DropoutRate
+		s.Workers[i].JoiningRate = s.Config.JoiningRate
 	}
 }
 
@@ -59,7 +59,7 @@ func (s *Simulator) areAllJobsFinished() bool {
 func (s *Simulator) Simulate() int {
 	cycle := 0
 	for !s.areAllJobsFinished() {
-		for i := 0; i < s.ParallelismNum; i++ {
+		for i := 0; i < s.Config.ParallelismNum; i++ {
 			s.assignJobs()
 			s.participationEvent()
 			s.dropoffJobs()
