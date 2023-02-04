@@ -84,6 +84,7 @@ func (s *Simulator) assignJobs() {
 						continue
 					}
 					worker.State = state.RunningWorkerState
+					worker.AssignedSubjob = subjob
 					subjob.AssignedWorker = append(subjob.AssignedWorker, worker)
 					subjob.State = state.ProcessingSubjobState
 					break
@@ -99,25 +100,34 @@ func (s *Simulator) assignJobs() {
 
 
 func (s *Simulator) workerSecessionEvent() {
-	for _, job := range s.Jobs {
-		for _, subjob := range job.Subjobs {
-			if subjob.State != state.ProcessingSubjobState {
+	for _, worker := range s.Workers {
+		if worker.State == state.UnavailableWorkerState {
+			continue
+		}
+		n, err := rand.Int(rand.Reader, big.NewInt(100))
+		if err != nil {
+			log.Fatal(err)
+		}
+		if n.Int64() < int64(worker.SecessionRate*100) {
+			err := worker.Secession()
+			if err != nil {
+				log.Fatal(err)
+			}
+			if worker.State != state.RunningWorkerState {
 				continue
 			}
-			for _, aw := range subjob.AssignedWorker {
-				n, err := rand.Int(rand.Reader, big.NewInt(100))
-				if err != nil {
-					log.Fatal(err)
+			for i, aw := range worker.AssignedSubjob.AssignedWorker {
+				if aw.ID == worker.ID {
+					worker.AssignedSubjob.RemoveWorker(i)
+					break
 				}
-				if n.Int64() < int64(aw.SecessionRate*100) {
-					err := aw.Secession()
-					if err != nil {
-						log.Fatal(err)
-					}
-					if job.State == state.UnallocatedJobState {
-						job.Failed()
-					}
-				}
+			}
+		}
+	}
+	for _, job := range s.Jobs {
+		for _, subjob := range job.Subjobs {
+			if len(subjob.AssignedWorker) == 0 && subjob.State == state.ProcessingSubjobState {
+				job.Failed()
 			}
 		}
 	}
@@ -142,10 +152,12 @@ func (s *Simulator) finishJobs() {
 }
 
 func (s *Simulator) workerJoinEvent() {
+	a:=0
 	for _, worker := range s.Workers {
-		if worker.State == state.AvailableWorkerState || worker.State == state.RunningWorkerState {
+		if worker.State != state.UnavailableWorkerState {
 			continue
 		}
+		a++
 		n, err := rand.Int(rand.Reader, big.NewInt(100))
 		if err != nil {
 			log.Fatal(err)

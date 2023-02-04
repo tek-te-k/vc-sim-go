@@ -10,12 +10,14 @@ type Worker struct {
 	State       state.WorkerState
 	SecessionRate float64
 	JoiningRate float64
+	AssignedSubjob *Subjob
 }
 
 func NewWorker(id int, state state.WorkerState) *Worker {
 	return &Worker{
 		ID:          id,
 		State:       state,
+		AssignedSubjob: nil,
 	}
 }
 
@@ -24,6 +26,7 @@ func (w *Worker) Secession() error {
 		return errors.New("Worker is not available")
 	}
 	w.State = state.UnavailableWorkerState
+	w.AssignedSubjob = nil
 	return nil
 }
 
@@ -32,5 +35,6 @@ func (w *Worker) Join() error {
 		return errors.New("Worker is not available")
 	}
 	w.State = state.AvailableWorkerState
+	w.AssignedSubjob = nil
 	return nil
 }

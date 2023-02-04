@@ -50,7 +50,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading joiningRate")
 	}
-	secessionRate, err := strconv.ParseFloat(os.Getenv("DROPOUT_RATE"), 64)
+	secessionRate, err := strconv.ParseFloat(os.Getenv("SECESSION_RATE"), 64)
 	if err != nil {
 		log.Fatal("Error loading secessionRate")
 	}
