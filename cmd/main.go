@@ -99,17 +99,14 @@ func main() {
 		parallelismNum,
 		redundancy,
 	)
-
-	workers := getInitializedWorkers(workerLimit)
-	jobs := getInitializedJobs(jobLimit, parallelismNum)
-	simulator := simulation.NewSimulator(workers, jobs, *config)
-
 	for i := 0; i < loopCount; i++ {
+		workers := getInitializedWorkers(workerLimit)
+		jobs := getInitializedJobs(jobLimit, parallelismNum)
+		simulator := simulation.NewSimulator(workers, jobs, *config)
 		simulator.SetWorkersState()
 		simulator.SetWorkersParticipationRate()
 		cycle := simulator.Simulate()
 		fmt.Println(i, "'s cycle : ", cycle)
 		simulator.Result.TotalCycle += cycle
 	}
-	fmt.Println("total cycle : ", simulator.Result.TotalCycle)
 }
