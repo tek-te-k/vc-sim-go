@@ -58,14 +58,12 @@ func (s *Simulator) areAllJobsFinished() bool {
 
 func (s *Simulator) Simulate() int {
 	cycle := 0
-	log.Println(s.Jobs[1])
 	for !s.areAllJobsFinished() {
 		s.assignJobs()
 		s.workerSecessionEvent()
 		s.finishJobs()
 		s.workerJoinEvent()
 		cycle++
-		// log.Println(s.Jobs[1])
 	}
 	return cycle
 }
@@ -106,15 +104,6 @@ func (s *Simulator) workerSecessionEvent() {
 			if subjob.State != state.ProcessingSubjobState {
 				continue
 			}
-			// subjobFailedRate := 1 - math.Pow((1 - s.Config.SecessionRate), len(subjob.AssignedWorker))
-			// n, err := rand.Int(rand.Reader, big.NewInt(100))
-			// if err != nil {
-			// 	log.Fatal(err)
-			// }
-			// if n.Int64() < int64(subjobFailedRate*100) {
-			// 	job.Failed()
-			// 	continue
-			// }
 			for _, aw := range subjob.AssignedWorker {
 				n, err := rand.Int(rand.Reader, big.NewInt(100))
 				if err != nil {
