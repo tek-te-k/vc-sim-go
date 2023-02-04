@@ -106,7 +106,7 @@ func main() {
 		simulator.SetWorkersState()
 		simulator.SetWorkersParticipationRate()
 		cycle := simulator.Simulate()
-		fmt.Println(i, "'s cycle : ", cycle)
+		fmt.Println(i, "'s cycle : ", cycle, "cycle / parallelism :", float64(cycle) / float64(parallelismNum))
 		simulator.Result.TotalCycle += cycle
 	}
 }

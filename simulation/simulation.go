@@ -21,9 +21,9 @@ type Simulator struct {
 
 func NewSimulator(workers []*models.Worker, jobs []*models.Job, config Config) *Simulator {
 	return &Simulator{
-		Workers:        workers,
-		Jobs:           jobs,
-		Config:         config,
+		Workers: workers,
+		Jobs:    jobs,
+		Config:  config,
 		Result: Result{
 			TotalCycle: 0,
 		},
@@ -69,7 +69,7 @@ func (s *Simulator) Simulate() int {
 }
 
 func (s *Simulator) assignJobs() {
-	label:
+label:
 	for _, job := range s.Jobs {
 		if job.State != state.UnallocatedJobState {
 			continue
@@ -98,7 +98,6 @@ func (s *Simulator) assignJobs() {
 	}
 }
 
-
 func (s *Simulator) workerSecessionEvent() {
 	for _, worker := range s.Workers {
 		if worker.State == state.UnavailableWorkerState {
@@ -109,10 +108,6 @@ func (s *Simulator) workerSecessionEvent() {
 			log.Fatal(err)
 		}
 		if n.Int64() < int64(worker.SecessionRate*100) {
-			err := worker.Secession()
-			if err != nil {
-				log.Fatal(err)
-			}
 			if worker.State != state.RunningWorkerState {
 				continue
 			}
@@ -122,6 +117,11 @@ func (s *Simulator) workerSecessionEvent() {
 					break
 				}
 			}
+			err := worker.Secession()
+			if err != nil {
+				log.Fatal(err)
+			}
+			
 		}
 	}
 	for _, job := range s.Jobs {
@@ -152,12 +152,10 @@ func (s *Simulator) finishJobs() {
 }
 
 func (s *Simulator) workerJoinEvent() {
-	a:=0
 	for _, worker := range s.Workers {
 		if worker.State != state.UnavailableWorkerState {
 			continue
 		}
-		a++
 		n, err := rand.Int(rand.Reader, big.NewInt(100))
 		if err != nil {
 			log.Fatal(err)
