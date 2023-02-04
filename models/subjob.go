@@ -7,13 +7,13 @@ import (
 type Subjob struct {
 	ID int
 	State state.SubjobState
-	AssignedWorker *Worker
+	AssignedWorker []*Worker
 }
 
-func NewSubjob(id int, state state.SubjobState, assignedWorker *Worker) *Subjob {
+func NewSubjob(id int, state state.SubjobState) *Subjob {
 	return &Subjob{
 		ID: id,
 		State: state,
-		AssignedWorker: assignedWorker,
+		AssignedWorker: make([]*Worker, 0),
 	}
 }

@@ -16,7 +16,7 @@ import (
 func getInitializedWorkers(workerCount int) []*models.Worker {
 	workers := make([]*models.Worker, workerCount)
 	for i := range workers {
-		workers[i] = models.NewWorker(i, state.UnavailableWorkerState, nil)
+		workers[i] = models.NewWorker(i, state.UnavailableWorkerState)
 	}
 	return workers
 }
@@ -26,7 +26,7 @@ func getInitializedJobs(jobCount int, parallelismNum int) []*models.Job {
 	for i := range jobs {
 		subjobs := make([]*models.Subjob, parallelismNum)
 		for j := range subjobs {
-			subjobs[j] = models.NewSubjob(j, state.UnallocatedSubjobState, nil)
+			subjobs[j] = models.NewSubjob(j, state.UnallocatedSubjobState)
 		}
 		jobs[i] = models.NewJob(i, state.UnallocatedJobState, subjobs)
 	}
@@ -50,9 +50,9 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading joiningRate")
 	}
-	dropoutRate, err := strconv.ParseFloat(os.Getenv("DROPOUT_RATE"), 64)
+	secessionRate, err := strconv.ParseFloat(os.Getenv("DROPOUT_RATE"), 64)
 	if err != nil {
-		log.Fatal("Error loading dropoutRate")
+		log.Fatal("Error loading secessionRate")
 	}
 	initialJoiningRate, err := strconv.ParseFloat(os.Getenv("INITIAL_JOINING_RATE"), 32)
 	if err != nil {
@@ -66,7 +66,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading parallelismNum")
 	}
-	redundancy, err := strconv.Atoi(os.Getenv("REFDUNDANCY"))
+	redundancy, err := strconv.Atoi(os.Getenv("REDUNDANCY"))
 	if err != nil {
 		log.Fatal("Error loading redundancy")
 	}
@@ -83,7 +83,7 @@ func main() {
 		workerLimit,
 		jobLimit,
 		joiningRate,
-		dropoutRate,
+		secessionRate,
 		initialJoiningRate,
 		loopCount,
 		parallelismNum,
@@ -93,7 +93,7 @@ func main() {
 		workerLimit,
 		jobLimit,
 		joiningRate,
-		dropoutRate,
+		secessionRate,
 		initialJoiningRate,
 		loopCount,
 		parallelismNum,

@@ -17,3 +17,16 @@ func NewJob(id int, state state.JobState, subjobs []*Subjob) *Job {
 		Subjobs: subjobs,
 	}
 }
+
+func (j *Job) Failed() {
+	for _, subjob := range j.Subjobs {
+		for _, aw := range subjob.AssignedWorker {
+			if aw.State == state.RunningWorkerState {
+				aw.State = state.AvailableWorkerState
+			}
+		}
+		subjob.State = state.UnallocatedSubjobState
+		subjob.AssignedWorker = make([]*Worker, 0)
+	}
+	j.State = state.UnallocatedJobState
+}
